@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Learn Loop</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+:root{
+  color-scheme:light;
+  --ground:#E8ECF0; --surface:#F8FAFB; --surface-2:#EEF2F5; --ink:#111922; --ink-2:#465463; --ink-3:#6E7C8A;
+  --line:#C9D2DA; --grid:rgba(17,25,34,.045);
+  --gold:#D19B12; --gold-ink:#3D2B00; --gold-soft:rgba(209,155,18,.14);
+  --ok:#1D8549; --ok-soft:rgba(29,133,73,.11);
+  --warn:#C9601A; --warn-soft:rgba(201,96,26,.12);
+  --bad:#C0342D; --bad-soft:rgba(192,52,45,.10);
+  --ai:#0B8BA5; --ai-soft:rgba(11,139,165,.11);
+  --shadow:0 1px 0 rgba(17,25,34,.04),0 8px 28px -14px rgba(17,25,34,.28);
+  --display:"Chakra Petch",ui-sans-serif,system-ui,sans-serif;
+  --body:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --ground:#0D1318; --surface:#141C24; --surface-2:#1A242E; --ink:#E3E9EF; --ink-2:#A5B2BF; --ink-3:#77848F;
+    --line:#26323E; --grid:rgba(227,233,239,.035);
+    --gold:#E6AE2F; --gold-ink:#2A1E00; --gold-soft:rgba(230,174,47,.14);
+    --ok:#40B872; --ok-soft:rgba(64,184,114,.13);
+    --warn:#EE8A3E; --warn-soft:rgba(238,138,62,.14);
+    --bad:#EE5D55; --bad-soft:rgba(238,93,85,.13);
+    --ai:#3DC4DC; --ai-soft:rgba(61,196,220,.12);
+    --shadow:0 1px 0 rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --ground:#0D1318; --surface:#141C24; --surface-2:#1A242E; --ink:#E3E9EF; --ink-2:#A5B2BF; --ink-3:#77848F;
+  --line:#26323E; --grid:rgba(227,233,239,.035);
+  --gold:#E6AE2F; --gold-ink:#2A1E00; --gold-soft:rgba(230,174,47,.14);
+  --ok:#40B872; --ok-soft:rgba(64,184,114,.13);
+  --warn:#EE8A3E; --warn-soft:rgba(238,138,62,.14);
+  --bad:#EE5D55; --bad-soft:rgba(238,93,85,.13);
+  --ai:#3DC4DC; --ai-soft:rgba(61,196,220,.12);
+  --shadow:0 1px 0 rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background-color:var(--ground);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  color:var(--ink); font:15px/1.55 var(--body);
+  padding-inline:16px; padding-block:20px 64px;
+}
+.wrap{max-width:760px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr);gap:28px}
+.wrap>*,.panel,.card,.card-body,.explain{min-width:0}
+[hidden]{display:none!important}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;letter-spacing:.01em}
+h2{font-size:1.15rem;font-weight:600}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.label{font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);font-weight:600}
+.sub{color:var(--ink-2);font-size:.9rem}
+.ann{color:var(--ink-3);font-size:.86rem;padding-left:1.1em;text-indent:-1.1em}
+.ann::before{content:"↳ ";}
+a{color:var(--ink);text-decoration-color:var(--gold);text-underline-offset:3px;text-decoration-thickness:2px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+section.block{display:grid;gap:12px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px}
+
+/* masthead */
+.mast{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.brand h1{font-size:2rem;font-weight:700;line-height:1}
+.brand h1 b{color:var(--gold)}
+.rank{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-weight:600;font-size:.88rem}
+.rank .xp{color:var(--ink-3);font-weight:500}
+
+/* score rail */
+.rail-panel{padding:20px 18px 16px;box-shadow:var(--shadow)}
+.rail-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.big{font-family:var(--mono);font-size:3.2rem;font-weight:700;line-height:.95;letter-spacing:-.02em}
+.big small{font-size:1rem;color:var(--ink-3);font-weight:500;letter-spacing:0}
+.delta{font-family:var(--mono);font-size:.9rem;font-weight:700}
+.delta.up{color:var(--ok)} .delta.down{color:var(--bad)}
+.rail{position:relative;height:54px;margin-top:18px}
+.rail .track{position:absolute;left:0;right:0;top:18px;height:10px;border-radius:5px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}
+.rail .fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--bad),var(--warn) 55%,var(--ok) 69%);opacity:.85;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.rail .pass{position:absolute;top:8px;height:30px;width:2px;background:var(--ink);}
+.rail .pass span{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font:700 .72rem var(--mono);white-space:nowrap}
+.rail .ghost{position:absolute;top:14px;width:2px;height:18px;background:var(--ink-3);opacity:.6}
+.rail .ticks{position:absolute;left:0;right:0;top:34px;display:flex;justify-content:space-between;font:500 .7rem var(--mono);color:var(--ink-3)}
+.gate{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:10px}
+.gate div{display:flex;gap:8px;align-items:flex-start;font-size:.86rem;color:var(--ink-2);line-height:1.35}
+.gate b{color:var(--ink);font-weight:600}
+
+/* shapes (severity by shape + hue) */
+.sh{flex:none;width:12px;height:12px;margin-top:3px;display:inline-block}
+.sh.ok{background:var(--ok);border-radius:50%}
+.sh.warn{background:var(--warn);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.sh.bad{background:var(--bad);clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%)}
+.sh.off{border:2px solid var(--ink-3);border-radius:50%}
+
+/* modes */
+.modes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media (max-width:620px){.modes{grid-template-columns:1fr 1fr}}
+.mode{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:left;display:grid;gap:2px;transition:border-color .15s,transform .15s}
+.mode:hover{border-color:var(--ink-3)}
+.mode:active{transform:translateY(1px)}
+.mode .t{font-family:var(--display);font-weight:600;font-size:1rem;display:flex;justify-content:space-between;gap:6px;align-items:center}
+.mode .d{font-size:.8rem;color:var(--ink-3);line-height:1.3}
+.mode.primary{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.mode.primary .d{color:var(--gold-ink);opacity:.8}
+.mode[disabled]{opacity:.45;cursor:not-allowed}
+.pill{font:700 .7rem var(--mono);padding:1px 7px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
+
+/* play card */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap;background:var(--surface-2)}
+.pips{display:flex;gap:4px;flex-wrap:wrap}
+.pip{width:14px;height:6px;border-radius:3px;background:var(--line)}
+.pip.r{background:var(--ok)} .pip.w{background:var(--bad)} .pip.now{background:var(--gold)}
+.meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.82rem;color:var(--ink-2)}
+.chip{border:1px solid var(--line);border-radius:6px;padding:2px 8px;background:var(--surface);font-weight:600;font-size:.78rem}
+.chip.ai{border-color:var(--ai);color:var(--ai);background:var(--ai-soft)}
+.diff{display:inline-flex;gap:2px}
+.diff i{width:7px;height:12px;border-radius:2px;background:var(--line)}
+.diff i.on{background:var(--ink-2)}
+.timer{font:700 .9rem var(--mono)}
+.timer.low{color:var(--bad)}
+.card-body{padding:18px;display:grid;gap:16px}
+.stem{font-size:1.02rem;line-height:1.6;max-width:68ch;margin:0}
+.stem mark{background:var(--gold-soft);color:inherit;border-bottom:2px solid var(--gold);padding:0 2px;border-radius:2px}
+.opts{display:grid;gap:8px;position:relative}
+.opt{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:9px;padding:10px 12px;line-height:1.45;transition:border-color .12s,background .12s}
+.opt:hover:not([disabled]){border-color:var(--ink-3)}
+.opt .k{font:700 .85rem var(--mono);width:26px;height:26px;display:grid;place-items:center;border-radius:6px;border:1.5px solid var(--line);color:var(--ink-2)}
+.opt.sel{border-color:var(--gold);background:var(--gold-soft)}
+.opt.sel .k{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.right .k{background:var(--ok);border-color:var(--ok);color:#fff}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt.wrong .k{background:var(--bad);border-color:var(--bad);color:#fff}
+.opt[disabled]{cursor:default}
+.opt .why{grid-column:2;font-size:.86rem;color:var(--ink-2);margin-top:4px}
+.veil{position:absolute;inset:-4px;border-radius:10px;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);background:color-mix(in srgb,var(--surface) 55%,transparent);display:grid;place-items:center;text-align:center;padding:16px;gap:8px}
+.veil p{margin:0;max-width:36ch;color:var(--ink-2);font-size:.9rem}
+.conf{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.conf button{border:1.5px solid var(--line);background:var(--surface);border-radius:9px;padding:10px 8px;display:grid;gap:1px;text-align:center}
+.conf button b{font-family:var(--display);font-size:.98rem}
+.conf button span{font-size:.74rem;color:var(--ink-3)}
+.conf button:hover:not([disabled]){border-color:var(--gold);background:var(--gold-soft)}
+.conf button[disabled]{opacity:.4;cursor:not-allowed}
+.hint{font-size:.8rem;color:var(--ink-3);text-align:center}
+.btn{border:1.5px solid var(--line);background:var(--surface);border-radius:9px;padding:9px 16px;font-weight:600}
+.btn:hover{border-color:var(--ink-3)}
+.btn.go{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.btn.ai{border-color:var(--ai);color:var(--ai)}
+.btn.ai:hover{background:var(--ai-soft)}
+.btn.quiet{border-color:transparent;background:transparent;color:var(--ink-2);padding-inline:8px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row.end{justify-content:flex-end}
+.verdict{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:9px;border:1px solid}
+.verdict.ok{background:var(--ok-soft);border-color:var(--ok)}
+.verdict.bad{background:var(--bad-soft);border-color:var(--bad)}
+.verdict.warn{background:var(--warn-soft);border-color:var(--warn)}
+.verdict h3{font-size:1.05rem}
+.verdict p{margin:2px 0 0;font-size:.9rem;color:var(--ink-2)}
+.explain{display:grid;gap:10px;font-size:.93rem}
+.explain p{margin:0;max-width:68ch}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:.9rem}
+.kv dt{color:var(--ink-3);font-weight:600;font-size:.76rem;text-transform:uppercase;letter-spacing:.07em;padding-top:3px}
+.kv dd{margin:0}
+.aibox{border:1px dashed var(--ai);border-radius:9px;padding:12px;display:grid;gap:8px;background:var(--ai-soft)}
+.aibox .label{color:var(--ai)}
+textarea,input[type=text]{width:100%;font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;resize:vertical}
+.aiout{white-space:pre-wrap;font-size:.9rem;margin:0}
+.lesson{display:grid;gap:10px}
+.lesson:empty{display:none}
+.lesson h3{font-size:1.1rem}
+.lesson p{margin:0;max-width:68ch;font-size:.93rem}
+.lesson .kv{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.minis{display:grid;gap:6px}
+.minis .opt{padding:7px 10px}
+.thread{display:grid;gap:8px}
+.thread:empty{display:none}
+.lcard{display:grid;gap:10px}
+.lcard.err{border-left:3px solid var(--bad);padding-left:10px}
+details.lold{border-top:1px solid var(--line);padding-top:8px}
+details.lold>.lcard{margin-top:10px}
+.asked{font-size:.85rem;color:var(--ink-3);margin:0}
+.bub{display:grid;gap:2px;padding:8px 12px;border-radius:9px;border:1px solid var(--line);background:var(--surface);max-width:92%}
+.bub.me{justify-self:end;background:var(--surface-2)}
+.bub.ai{border-color:var(--ai)}
+.bub.err{border-color:var(--bad)}
+.bub .who{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);font-weight:600}
+.gloss{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.gloss button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 10px;font-size:.82rem}
+.gloss button:hover{border-color:var(--ai)}
+.summary{display:grid;gap:14px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stat{border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:var(--surface-2)}
+.stat .v{font:700 1.5rem var(--mono)}
+.stat .l{font-size:.78rem;color:var(--ink-3)}
+.idle{display:grid;gap:10px;padding:26px 18px;text-align:left}
+.idle p{margin:0;max-width:60ch;color:var(--ink-2)}
+
+/* ledger */
+.ledger{display:grid;gap:0}
+.drow{display:grid;grid-template-columns:1fr auto;gap:4px 14px;padding:12px 0;border-top:1px solid var(--line)}
+.drow:first-child{border-top:0}
+.drow .n{font-weight:650;font-size:.98rem;display:flex;align-items:center;gap:8px}
+.drow .w{color:var(--ink-3);font-weight:500;font-size:.8rem}
+.drow .pct{font:700 1.15rem var(--mono);text-align:right}
+.bar{grid-column:1/-1;height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;transition:width .5s}
+.drow .ann{grid-column:1/-1}
+details.concepts{grid-column:1/-1}
+details.concepts summary{cursor:pointer;font-size:.82rem;color:var(--ink-3);list-style:none}
+details.concepts summary::before{content:"› ";display:inline-block;transition:transform .15s}
+details.concepts[open] summary::before{transform:rotate(90deg)}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:4px 16px;margin-top:8px}
+.cgrid div{display:flex;justify-content:space-between;gap:8px;font-size:.84rem;border-bottom:1px dotted var(--line);padding:3px 0}
+.cgrid .num{color:var(--ink-2)}
+
+/* reading sections */
+.prose{display:grid;gap:10px}
+.prose p{margin:0;max-width:68ch}
+.rules{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.rules li{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start}
+.rules .tag{font:700 .72rem var(--mono);padding:3px 7px;border-radius:5px;border:1px solid var(--line);background:var(--surface-2);white-space:nowrap;margin-top:2px}
+.rules b{font-weight:650}
+.rules p{margin:2px 0 0;font-size:.88rem;color:var(--ink-2)}
+.rules cite{font-style:normal;font-size:.8rem;color:var(--ink-3)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{text-align:left;padding:8px 10px 8px 0;border-top:1px solid var(--line);vertical-align:top}
+th{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);border-top:0}
+td .ann{margin-top:2px}
+.foot{font-size:.82rem;color:var(--ink-3);display:grid;gap:6px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--ground);padding:9px 16px;border-radius:8px;font-size:.88rem;font-weight:600;z-index:10;max-width:calc(100% - 32px)}
+.pop{animation:pop .35s ease-out}
+@keyframes pop{0%{transform:scale(.97)}60%{transform:scale(1.01)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:0 4px}
+.mode:disabled{opacity:.45;cursor:not-allowed}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <div class="brand">
+      <h1>Learn<b>·</b>Loop</h1>
+      <span class="sub" id="bankTitle">No question bank loaded</span>
+    </div>
+    <span class="rank" id="rank"><span class="sh off"></span><span id="rankName">Unplaced</span><span class="xp num" id="xp">0 xp</span></span>
+  </header>
+
+  <section class="panel rail-panel" aria-labelledby="railh">
+    <div class="rail-top">
+      <div>
+        <div class="label" id="railh">Where you'd land if you sat it today</div>
+        <div class="big num" id="pred">—<small> %</small></div>
+      </div>
+      <div style="text-align:right">
+        <div class="delta num" id="delta"></div>
+        <div class="sub" id="predNote">Starts once you answer</div>
+      </div>
+    </div>
+    <div class="rail" aria-hidden="true">
+      <div class="track"><div class="fill" id="railFill" style="width:0"></div></div>
+      <div class="ghost" id="railGhost" style="left:0" hidden></div>
+      <div class="pass" id="passTick" style="left:70%"><span id="passLabel">70% PASS</span></div>
+      <div class="ticks"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
+    </div>
+    <p class="ann" id="drag" style="margin:4px 0 0">Answer a few questions and this names what's holding the number down.</p>
+    <div class="label" style="margin-top:14px">Ready for the real thing · all must clear</div>
+    <div class="gate" id="gate"></div>
+  </section>
+
+  <section class="block" aria-label="Choose a mode">
+    <div class="modes">
+      <button class="mode primary" id="mClimb"><span class="t">Climb <span class="pill" style="background:transparent;border-color:var(--gold-ink);color:var(--gold-ink)">12</span></span><span class="d">Adapts every answer. Aims you at ~80% right.</span></button>
+      <button class="mode" id="mReview"><span class="t">Review <span class="pill num" id="dueN">0</span></span><span class="d">What's fading and what you missed.</span></button>
+      <button class="mode" id="mBoss"><span class="t">Boss run <span class="pill">10</span></span><span class="d">Harder set, on a clock.</span></button>
+      <button class="mode" id="mMock"><span class="t">Mock <span class="pill num" id="mockN">–</span></span><span class="d" id="mockD">Timed, no feedback until the end.</span></button>
+    </div>
+  </section>
+
+  <section class="card" id="card" aria-live="polite"></section>
+
+  <section class="block" aria-labelledby="ledh">
+    <div class="row" style="justify-content:space-between">
+      <h2 id="ledh">By topic</h2>
+      <span class="sub">Estimated % correct · weight</span>
+    </div>
+    <div class="panel ledger" id="ledger"></div>
+  </section>
+
+  <section class="block" aria-labelledby="looph">
+    <h2 id="looph">Close the loop with your agent</h2>
+    <div class="panel prose">
+      <p>The bank is finite, so you'll start recognizing questions. After a few runs, hand your results to your coding agent (Codex, Claude Code, any agent that reads <code>AGENTS.md</code>) and it writes new, harder questions on exactly what you keep missing.</p>
+      <div class="row">
+        <button class="btn go" id="saveProg">Save progress.json</button>
+        <button class="btn" id="copyProg">Copy progress report</button>
+      </div>
+      <p class="ann">Save progress.json into this folder, then tell your agent: <b>“read progress.json and extend the bank”</b>. Reload this page when it's done.</p>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div>Progress is stored in this browser only, per question bank. Nothing leaves your machine.</div>
+    <div>Bank: <span class="num" id="bankN">0</span> questions. The estimate is a model of your answers, not a guarantee.</div>
+    <div class="row"><button class="btn quiet" id="resetBtn">Reset progress</button><span id="resetConfirm" hidden><span class="sub">This erases everything for this bank.</span> <button class="btn" id="resetYes" style="border-color:var(--bad);color:var(--bad)">Erase</button> <button class="btn quiet" id="resetNo">Keep</button></span></div>
+  </footer>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="bank.js"></script>
+<script>
+(() => {
+"use strict";
+const RAW = window.LEARN_BANK || null;
+const DAY = 864e5;
+const $ = id => document.getElementById(id);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const sig = x => 1 / (1 + Math.exp(-x));
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pct = x => Math.round(x * 100) + "%";
+const human = s => String(s).replace(/[-_]/g, " ");
+
+/* ---------- bank ---------- */
+const BANK = RAW && Array.isArray(RAW.items) ? RAW.items.filter(q => q && q.stem && Array.isArray(q.options) && Array.isArray(q.answer)) : [];
+const TITLE = RAW && RAW.title ? String(RAW.title) : "Untitled";
+const PASS = clamp(Number(RAW && RAW.passMark) || 0.7, 0.3, 0.99);
+const DOMS = {};
+if (BANK.length) {
+  const declared = (RAW.domains || []).filter(d => d && d.id);
+  const ids = declared.length ? declared.map(d => d.id) : [...new Set(BANK.map(q => q.domain || "general"))];
+  for (const q of BANK) if (!ids.includes(q.domain)) q.domain = ids.includes("general") && !q.domain ? "general" : ids[0];
+  let tot = 0;
+  for (const id of ids) { const d = declared.find(x => x.id === id) || {}; const n = BANK.filter(q => q.domain === id).length; if (!n) continue; DOMS[id] = { name: d.name || human(id), w: Number(d.weight) > 0 ? Number(d.weight) : n }; tot += DOMS[id].w; }
+  for (const id in DOMS) DOMS[id].w /= tot;
+}
+const MOCK_N = BANK.length ? Math.min(Number(RAW.mock && RAW.mock.questions) || 40, BANK.length) : 0;
+const MOCK_MIN = Number(RAW && RAW.mock && RAW.mock.minutes) || Math.max(10, Math.round(MOCK_N * 1.5));
+const BOSS_SEC = Number(RAW && RAW.secondsPerQuestion) || Math.round(MOCK_MIN * 60 / Math.max(1, MOCK_N));
+const KEY = "learn-loop:" + TITLE.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
+/* ---------- state ---------- */
+const fresh = () => ({ v: 1, theta: -1.0, n: 0, xp: 0, ct: {}, it: {}, runs: [], mocks: [], calib: { guess: [0, 0], think: [0, 0], sure: [0, 0] }, domLast: {}, blind: true, extDone: false, recent: [] });
+let S = fresh();
+try { const t = localStorage.getItem(KEY); if (t) S = Object.assign(fresh(), JSON.parse(t)); } catch {}
+let saveTimer = null;
+const persist = () => { clearTimeout(saveTimer); saveTimer = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} }, 300); };
+const byId = id => BANK.find(q => q.id === id);
+
+/* ---------- model: Elo per concept, item difficulty from the 1-5 label ---------- */
+const guessFloor = q => q.answer.length > 1 ? 0.1 : 1 / Math.max(2, q.options.length);
+const bOf = q => ((Number(q.difficulty) || 3) - 3) * 0.9;
+function thetaEff(q) { const cs = q.concepts || []; let off = 0; for (const c of cs) off += (S.ct[c]?.t || 0); return S.theta + (cs.length ? off / cs.length : 0); }
+const pRaw = q => sig(thetaEff(q) - bOf(q));
+const pCorrect = q => { const g = guessFloor(q); return g + (1 - g) * pRaw(q); };
+function update(q, correct, conf) {
+  const o = correct ? (conf === "guess" ? 0.6 : 1) : 0, e = pRaw(q);
+  S.theta = clamp(S.theta + Math.max(0.08, 0.45 / (1 + S.n / 30)) * (o - e), -4, 4);
+  for (const c of q.concepts || []) { const r = S.ct[c] || (S.ct[c] = { t: 0, n: 0 }); r.t = clamp(r.t + Math.max(0.15, 0.6 / (1 + r.n / 8)) * (o - e), -3, 3); r.n++; }
+  S.n++;
+  const r = S.it[q.id] || (S.it[q.id] = { n: 0, r: 0, w: 0, s: 0, last: 0, due: 0 });
+  r.n++; r.last = Date.now();
+  if (correct) { r.r++; const m = conf === "sure" ? 2.6 : conf === "think" ? 1.9 : 1.3; r.s = r.s ? r.s * m : (conf === "sure" ? 3 : conf === "think" ? 1.5 : 0.6); }
+  else { r.w++; r.s = r.s ? Math.max(0.3, r.s * 0.3) : 0.3; if (conf === "sure") r.sw = (r.sw || 0) + 1; }
+  r.s = Math.min(r.s, 90); r.due = r.last + r.s * DAY; r.conf = conf; r.ok = correct;
+  S.calib[conf][1]++; if (correct) S.calib[conf][0]++;
+  S.domLast[q.domain] = Date.now();
+}
+function domainAcc(d) {
+  const qs = BANK.filter(q => q.domain === d); if (!qs.length) return 0;
+  const days = S.domLast[d] ? (Date.now() - S.domLast[d]) / DAY : 0, f = Math.max(0.7, Math.exp(-days / 21));
+  let sum = 0; for (const q of qs) { const g = guessFloor(q); sum += g + (pCorrect(q) - g) * f; }
+  return sum / qs.length;
+}
+function conceptAcc(c) { const qs = BANK.filter(q => (q.concepts || []).includes(c)); return qs.length ? qs.reduce((s, q) => s + pCorrect(q), 0) / qs.length : null; }
+function predicted() {
+  let p = 0; for (const d in DOMS) p += DOMS[d].w * domainAcc(d);
+  const recent = S.mocks.filter(m => Date.now() - m.ts < 14 * DAY);
+  if (recent.length) p = 0.6 * p + 0.4 * recent[recent.length - 1].raw;
+  return clamp(p, 0, 1);
+}
+function rankOf(p) {
+  if (S.n < 5) return ["Unplaced", "off"];
+  if (p < PASS - 0.25) return ["Starting out", "bad"];
+  if (p < PASS - 0.1) return ["Getting traction", "warn"];
+  if (p < PASS) return ["Close", "warn"];
+  if (p < PASS + 0.08) return ["Passing", "ok"];
+  return ["Ready", "ok"];
+}
+const dueList = () => { const now = Date.now(); return Object.entries(S.it).filter(([id, r]) => r.due && r.due <= now && byId(id)).sort((a, b) => a[1].due - b[1].due).map(([id]) => id); };
+const weakestConcepts = (k = 3) => Object.keys(S.ct).filter(c => S.ct[c].n >= 1).map(c => [c, conceptAcc(c)]).filter(x => x[1] != null).sort((a, b) => a[1] - b[1]).slice(0, k);
+
+/* ---------- selection ---------- */
+function pick(run) {
+  const inRun = new Set(run.ids), pos = run.ids.length;
+  const rl = run.relearn.find(x => pos - x.at >= x.gap);
+  if (rl && run.mode !== "boss") { run.relearn = run.relearn.filter(x => x !== rl); return byId(rl.id); }
+  if (run.mode === "review") {
+    const due = dueList().filter(id => !inRun.has(id)); if (due.length) return byId(due[0]);
+    const missed = Object.entries(S.it).filter(([id, r]) => r.w > 0 && !inRun.has(id) && byId(id)).sort((a, b) => (b[1].w - b[1].r) - (a[1].w - a[1].r));
+    return missed.length ? byId(missed[0][0]) : null;
+  }
+  if (run.mode === "climb" && Math.random() < 0.3) { const due = dueList().filter(id => !inRun.has(id)); if (due.length) return byId(due[0]); }
+  const target = run.mode === "boss" ? 0.62 : 0.8;
+  const keys = Object.keys(DOMS);
+  const ws = keys.map(d => { let w = DOMS[d].w * (1.25 - domainAcc(d)); if (d === run.lastDom && keys.length > 1) w *= 0.3; return [d, w]; });
+  let r = Math.random() * ws.reduce((s, x) => s + x[1], 0), dom = ws[0][0];
+  for (const [d, w] of ws) { if ((r -= w) <= 0) { dom = d; break; } }
+  const recent = new Set(S.recent || []);
+  let pool = BANK.filter(q => q.domain === dom && !inRun.has(q.id));
+  const unseenLately = pool.filter(q => !recent.has(q.id)); if (unseenLately.length) pool = unseenLately;
+  if (!pool.length) pool = BANK.filter(q => !inRun.has(q.id));
+  let best = null, bs = 1e9;
+  for (const q of pool) { let s = Math.abs(pCorrect(q) - target) + Math.random() * 0.04; if (!S.it[q.id]) s -= 0.03; if (run.mode === "boss" && q.difficulty < 3) s += 0.2; if (s < bs) { bs = s; best = q; } }
+  return best;
+}
+function buildMock() {
+  const out = [];
+  for (const d in DOMS) {
+    const qs = BANK.filter(q => q.domain === d).sort((a, b) => ((S.it[a.id]?.last || 0) - (S.it[b.id]?.last || 0)) + (Math.random() - 0.5) * 3 * DAY);
+    out.push(...qs.slice(0, Math.max(1, Math.round(MOCK_N * DOMS[d].w))));
+  }
+  return shuffle(out).slice(0, MOCK_N).map(q => q.id);
+}
+
+/* ---------- run engine ---------- */
+let run = null;
+function startRun(mode) {
+  if (!BANK.length) return;
+  if (run && run.mode === "mock" && run.phase !== "done" && mode !== "mock") { toast("Finish or end the mock first"); return; }
+  run = { mode, ids: [], res: [], relearn: [], phase: "ask", sel: new Set(), pred0: predicted(), xp0: S.xp, combo: 0 };
+  if (mode === "climb") run.len = Math.min(12, BANK.length);
+  if (mode === "review") run.len = Math.min(12, Math.max(1, dueList().length + Object.values(S.it).filter(r => r.w > 0).length));
+  if (mode === "boss") { run.len = Math.min(10, BANK.length); run.deadline = Date.now() + run.len * BOSS_SEC * 1e3; }
+  if (mode === "mock") { run.queue = buildMock(); run.len = run.queue.length; run.deadline = Date.now() + MOCK_MIN * 60e3; run.answers = {}; }
+  next();
+  $("card").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function next() {
+  if (run.ids.length >= run.len) return finish();
+  const q = run.mode === "mock" ? byId(run.queue[run.ids.length]) : pick(run);
+  if (!q) return finish();
+  run.q = q; run.ids.push(q.id); run.sel = new Set(); run.phase = "ask";
+  run.revealed = run.mode === "mock" || !S.blind || q.difficulty <= 1;
+  run.order = shuffle(q.options.map((_, i) => i));
+  renderCard();
+}
+function choose(i) {
+  if (run.phase !== "ask" || !run.revealed) return;
+  if (run.q.answer.length > 1) { run.sel.has(i) ? run.sel.delete(i) : (run.sel.size < run.q.answer.length && run.sel.add(i)); } else run.sel = new Set([i]);
+  renderCard();
+}
+function submit(conf) {
+  const q = run.q; if (run.phase !== "ask" || run.sel.size !== q.answer.length) return;
+  const correct = q.answer.every(a => run.sel.has(a));
+  (S.recent || (S.recent = [])).push(q.id); if (S.recent.length > 40) S.recent.shift();
+  if (run.mode === "mock") { run.answers[q.id] = { correct, conf }; run.res.push(correct ? 1 : 0); return next(); }
+  update(q, correct, conf);
+  let gain = 0;
+  if (correct) { run.combo++; gain = Math.round(10 * (q.difficulty || 3) * (conf === "sure" ? 1.5 : conf === "think" ? 1 : 0.5) * Math.min(2, 1 + 0.1 * (run.combo - 1))); }
+  else { run.combo = 0; gain = conf === "sure" ? -10 : 0; run.relearn.push({ id: q.id, at: run.ids.length, gap: conf === "sure" ? 2 : 4 }); if (run.mode !== "review" && run.len < 16) run.len++; }
+  S.xp = Math.max(0, S.xp + gain);
+  run.res.push(correct ? 1 : 0); run.lastDom = q.domain; run.fb = { correct, conf, gain }; run.phase = "fb";
+  persist(); renderCard(); renderTop(); renderLedger();
+}
+function finish() {
+  run.phase = "done";
+  if (run.mode === "mock") {
+    const ids = run.queue.slice(0, run.ids.length), byDom = {};
+    for (const id of ids) { const q = byId(id), a = run.answers[id], d = byDom[q.domain] || (byDom[q.domain] = [0, 0]); d[1]++; if (a && a.correct) d[0]++; update(q, !!(a && a.correct), a ? a.conf : "guess"); }
+    const right = ids.filter(id => run.answers[id]?.correct).length, raw = ids.length ? right / ids.length : 0;
+    run.mock = { raw, byDom, n: ids.length, right, complete: Object.keys(run.answers).length === run.queue.length };
+    S.mocks.push({ ts: Date.now(), raw, n: ids.length, complete: run.mock.complete });
+  }
+  S.runs.push({ ts: Date.now(), mode: run.mode, n: run.res.length, right: run.res.reduce((a, b) => a + b, 0), pred0: run.pred0, pred1: predicted() });
+  if (S.runs.length > 120) S.runs.shift();
+  persist(); renderCard(); renderAll();
+}
+const endEarly = () => { if (run.mode !== "mock") run.len = run.ids.length; finish(); };
+
+/* ---------- rendering ---------- */
+function renderAll() { renderTop(); renderLedger(); if (!run) renderCard(); }
+function renderTop() {
+  const p = predicted(), [rn, rs] = rankOf(p);
+  $("rankName").textContent = rn; $("rank").firstElementChild.className = "sh " + rs;
+  $("xp").textContent = S.xp.toLocaleString() + " xp";
+  $("pred").firstChild.textContent = S.n ? String(Math.round(p * 100)) : "—";
+  $("railFill").style.width = S.n ? (p * 100) + "%" : "0";
+  const base = run ? run.pred0 : (S.runs.length ? S.runs[S.runs.length - 1].pred0 : null), dl = $("delta");
+  if (base != null && S.n) { $("railGhost").style.left = (base * 100) + "%"; $("railGhost").hidden = false; const d = Math.round((p - base) * 100); dl.textContent = (d >= 0 ? "▲ +" : "▼ ") + d + " pts" + (run ? " this run" : " last run"); dl.className = "delta num " + (d >= 0 ? "up" : "down"); }
+  else { $("railGhost").hidden = true; dl.textContent = ""; }
+  $("predNote").textContent = S.n ? `${S.n} answers so far${S.mocks.length ? " · blended with your latest mock" : ""}` : "Starts once you answer";
+  if (S.n >= 3) {
+    let worst = null, wv = -1; for (const d in DOMS) { const g = DOMS[d].w * (1 - domainAcc(d)); if (g > wv) { wv = g; worst = d; } }
+    const wc = weakestConcepts(1)[0];
+    $("drag").textContent = `Biggest drag: ${DOMS[worst].name} (${Math.round(DOMS[worst].w * 100)}% of the test, you're at ${pct(domainAcc(worst))})` + (wc ? ` · weakest concept: ${human(wc[0])} at ${pct(wc[1])}` : "");
+  }
+  const g = $("gate"); g.replaceChildren();
+  const cm = S.mocks.filter(m => m.complete), good = cm.filter(m => m.raw >= PASS + 0.06), [sr, sn] = S.calib.sure;
+  const rows = [
+    { ok: p >= PASS + 0.07, warn: p >= PASS, t: `Estimate at ${Math.round((PASS + 0.07) * 100)}%+`, d: S.n ? `now ${Math.round(p * 100)}%; the margin covers a bad day` : "no answers yet" },
+    { ok: good.length >= 2, warn: good.length === 1, t: `Two mocks at ${Math.round((PASS + 0.06) * 100)}%+`, d: cm.length ? `${good.length} of ${cm.length} full mocks cleared` : "no full mock taken yet" },
+    { ok: sn >= 25 && sr / sn >= 0.9, warn: sn >= 10 && sr / sn >= 0.8, t: "“Sure” means right", d: sn ? `${pct(sr / sn)} right when sure, over ${sn} answers (need 90%, 25+)` : "no “sure” answers yet" },
+  ];
+  if (RAW && RAW.externalCheck) rows.push({ ok: S.extDone, warn: false, t: String(RAW.externalCheck), d: S.extDone ? "marked done" : "an outside check this bank didn't write. Tap when done", toggle: true });
+  for (const s of rows) {
+    const row = el("div"); row.append(el("span", "sh " + (s.ok ? "ok" : s.warn ? "warn" : "off")));
+    const txt = el("span"); txt.append(el("b", null, s.t), document.createElement("br"), document.createTextNode(s.d)); row.append(txt);
+    if (s.toggle) { row.style.cursor = "pointer"; row.tabIndex = 0; row.setAttribute("role", "button"); const flip = () => { S.extDone = !S.extDone; persist(); renderTop(); }; row.onclick = flip; row.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); } }; }
+    g.append(row);
+  }
+  $("dueN").textContent = dueList().length;
+}
+const band = a => a >= PASS + 0.05 ? "ok" : a >= PASS - 0.1 ? "warn" : "bad";
+function renderLedger() {
+  const L = $("ledger"); L.replaceChildren();
+  for (const d in DOMS) {
+    const a = domainAcc(d), b = band(a), row = el("div", "drow");
+    const n = el("div", "n"); n.append(el("span", "sh " + (S.n ? b : "off")), document.createTextNode(DOMS[d].name));
+    const bar = el("div", "bar"), i = el("i"); i.style.width = (S.n ? a * 100 : 0) + "%"; i.style.background = `var(--${b})`; bar.append(i);
+    row.append(n, el("div", "pct num", S.n ? pct(a) : "—"), bar);
+    const cs = [...new Set(BANK.filter(q => q.domain === d).flatMap(q => q.concepts || []))];
+    const scored = cs.map(c => [c, conceptAcc(c), S.ct[c]?.n || 0]), tried = scored.filter(x => x[2] > 0).sort((x, y) => x[1] - y[1]);
+    row.append(el("div", "w", Math.round(DOMS[d].w * 100) + "% of the test"), el("div", "ann", tried.length ? `weakest: ${human(tried[0][0])} (${pct(tried[0][1])})` + (tried.length > 1 ? ` · strongest: ${human(tried[tried.length - 1][0])} (${pct(tried[tried.length - 1][1])})` : "") + ` · ${tried.length} of ${cs.length} concepts touched` : `${cs.length} concepts, none touched yet`));
+    const det = el("details", "concepts"); det.append(el("summary", null, "Every concept in this topic"));
+    const grid = el("div", "cgrid"); for (const [c, acc, cnt] of scored.sort((x, y) => x[0].localeCompare(y[0]))) { const r = el("div"); r.append(el("span", null, human(c)), el("span", "num", cnt ? pct(acc) : "·")); grid.append(r); }
+    det.append(grid); row.append(det); L.append(row);
+  }
+}
+function diffPips(d) { const s = el("span", "diff"); s.title = "Difficulty " + d + " of 5"; for (let i = 1; i <= 5; i++) s.append(el("i", i <= d ? "on" : "")); return s; }
+function stemEl(q, show) {
+  const p = el("p", "stem"), k = q.keyword || "", at = show && k ? q.stem.indexOf(k) : -1;
+  if (at < 0) { p.textContent = q.stem; return p; }
+  p.append(document.createTextNode(q.stem.slice(0, at)), el("mark", null, k), document.createTextNode(q.stem.slice(at + k.length))); return p;
+}
+async function copyText(text, okMsg) { try { await navigator.clipboard.writeText(text); toast(okMsg || "Copied"); } catch { toast("Couldn't copy. Select the text instead."); } }
+let tick = null;
+function renderCard() {
+  const C = $("card"); C.replaceChildren(); clearInterval(tick);
+  if (!BANK.length) return renderSetup(C);
+  if (!run) return renderIdle(C);
+  if (run.phase === "done") return renderDone(C);
+  const q = run.q, fb = run.phase === "fb";
+  const head = el("div", "card-head"), pips = el("div", "pips");
+  if (run.mode === "mock") pips.append(el("span", "num sub", `Question ${run.ids.length} of ${run.len}`));
+  else for (let i = 0; i < run.len; i++) pips.append(el("span", "pip " + (i < run.res.length ? (run.res[i] ? "r" : "w") : i === run.res.length ? "now" : "")));
+  const meta = el("div", "meta");
+  meta.append(el("span", "chip", DOMS[q.domain].name), diffPips(q.difficulty || 3));
+  if (run.combo >= 3 && run.mode !== "mock") meta.append(el("span", "chip num", "combo ×" + run.combo));
+  if (run.deadline) { const t = el("span", "timer num"); meta.append(t); const upd = () => { const ms = run.deadline - Date.now(); if (ms <= 0) { clearInterval(tick); t.textContent = "0:00"; if (run.phase !== "done") { toast("Time"); finish(); } return; } t.textContent = Math.floor(ms / 60e3) + ":" + String(Math.floor(ms % 60e3 / 1e3)).padStart(2, "0"); t.classList.toggle("low", ms < 2 * 60e3); }; upd(); tick = setInterval(upd, 1000); }
+  head.append(pips, meta); C.append(head);
+  const body = el("div", "card-body");
+  body.append(stemEl(q, fb));
+  if (q.answer.length > 1 && !fb) body.append(el("div", "label", `Pick ${q.answer.length}`));
+  const opts = el("div", "opts");
+  run.order.forEach((oi, pos) => {
+    const b = el("button", "opt"); b.type = "button"; b.append(el("span", "k", String.fromCharCode(65 + pos)), el("span", null, q.options[oi]));
+    const isAns = q.answer.includes(oi);
+    if (fb) { b.disabled = true; if (isAns) b.classList.add("right"); else if (run.sel.has(oi)) { b.classList.add("wrong"); const wr = q.wrong && q.wrong[oi]; if (wr && wr !== "(correct)") b.append(el("span", "why", wr)); } }
+    else { if (run.sel.has(oi)) b.classList.add("sel"); b.onclick = () => choose(oi); }
+    opts.append(b);
+  });
+  if (!run.revealed && !fb) { const v = el("div", "veil"); v.append(el("p", null, "Read it first. Find the one phrase that decides it and guess the answer before you look.")); const go = el("button", "btn go", "Show the options"); go.onclick = () => { run.revealed = true; renderCard(); }; v.append(go); opts.append(v); }
+  body.append(opts);
+  if (!fb) {
+    const need = q.answer.length - run.sel.size, conf = el("div", "conf");
+    for (const [k, t, s] of [["guess", "Guess", "no idea, picked one"], ["think", "Think so", "fairly confident"], ["sure", "Sure", "I'd bet on it"]]) { const b = el("button"); b.type = "button"; b.append(el("b", null, t), el("span", null, s)); b.disabled = need !== 0 || !run.revealed; b.onclick = () => submit(k); conf.append(b); }
+    body.append(conf, el("div", "hint", !run.revealed ? "Space shows the options" : need > 0 ? "Pick an answer, then say how sure you are to lock it in" : "Lock it in by saying how sure you are · keys 1–5, then Q W E"));
+    const bottom = el("div", "row end");
+    if (run.mode !== "mock") { const tog = el("button", "btn quiet", S.blind ? "Hide options first: on" : "Hide options first: off"); tog.onclick = () => { S.blind = !S.blind; persist(); if (!S.blind) run.revealed = true; renderCard(); }; bottom.append(tog); }
+    const quit = el("button", "btn quiet", run.mode === "mock" ? "Submit mock now" : "End run"); quit.onclick = endEarly; bottom.append(quit); body.append(bottom);
+  } else body.append(renderFeedback(q));
+  C.append(body);
+}
+function renderFeedback(q) {
+  const box = el("div", "explain"), { correct, conf, gain } = run.fb;
+  const v = correct && conf === "guess" ? ["warn", "Right, but you guessed", "Counts for less. It comes back soon so you can earn it properly."]
+    : correct ? ["ok", conf === "sure" ? "Called it" : "Right", "Next one aims a little higher."]
+    : conf === "sure" ? ["bad", "Confident miss", "These stick best once you fix them. It comes back in two questions."]
+    : ["bad", "Not this time", "It comes back later in this run."];
+  const vd = el("div", "verdict pop " + v[0]), vt = el("div"); vt.append(el("h3", null, v[1]), el("p", null, v[2]));
+  const g = el("div", "num", (gain > 0 ? "+" : "") + gain + " xp"); g.style.marginLeft = "auto"; g.style.fontWeight = "700";
+  vd.append(el("span", "sh " + v[0]), vt, g); box.append(vd);
+  if (q.why) box.append(el("p", null, q.why));
+  const dl = el("dl", "kv"), kv = (k, t) => { if (t) dl.append(el("dt", null, k), el("dd", null, t)); };
+  kv("Decider", q.keyword ? "“" + q.keyword + "” (highlighted above)" : ""); kv("The trap", q.trap); kv("In practice", q.field); kv("Source", q.source);
+  if (dl.childElementCount) box.append(dl);
+  if (q.wrong && q.wrong.length) {
+    const others = el("details", "concepts"); others.append(el("summary", null, "Why each of the other options is wrong"));
+    const ul = el("div", "cgrid"); ul.style.gridTemplateColumns = "1fr";
+    run.order.forEach((oi, pos) => { if (!q.answer.includes(oi) && q.wrong[oi]) { const r = el("div"); r.style.display = "block"; r.append(el("b", "num", String.fromCharCode(65 + pos) + "  "), document.createTextNode(q.wrong[oi])); ul.append(r); } });
+    others.append(ul); box.append(others);
+  }
+  const row = el("div", "row end");
+  const ask = el("button", "btn", "Copy a question for my agent");
+  ask.title = "Paste it into Codex or Claude Code and add what you don't get";
+  ask.onclick = () => copyText(`I just ${correct ? "got right" : "missed"} this question (I answered: ${[...run.sel].map(i => q.options[i]).join(" + ")}; I was ${conf === "sure" ? "sure" : conf === "think" ? "fairly confident" : "guessing"}).\n\n${q.stem}\n${q.options.map((o, i) => String.fromCharCode(65 + i) + ") " + o).join("\n")}\nCorrect: ${q.answer.map(i => q.options[i]).join(" + ")}\n\nHere's how I was thinking about it: `, "Copied. Paste it to your agent and finish the last line.");
+  const nb = el("button", "btn go", run.ids.length >= run.len ? "See the run" : "Next question"); nb.onclick = next;
+  row.append(ask, el("span", "hint", "Enter"), nb); box.append(row);
+  setTimeout(() => nb.focus({ preventScroll: true }), 0);
+  return box;
+}
+function renderSetup(C) {
+  const d = el("div", "idle");
+  d.append(el("div", "label", "No question bank yet"), el("h2", null, "Have your agent build one from your documents"));
+  d.append(el("p", null, "This page plays whatever is in bank.js, the file next to it. Open this folder in Codex, Claude Code, or any coding agent, drop your study material into docs/, and say:"));
+  const pre = el("p", "aiout num", "build a question bank from docs/"); pre.style.cssText = "padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2)";
+  d.append(pre, el("p", null, "The agent follows AGENTS.md, writes bank.js, and checks its own answer key. Then reload this page."));
+  C.append(d);
+}
+function renderIdle(C) {
+  const d = el("div", "idle");
+  if (!S.n) { d.append(el("div", "label", "Start here"), el("h2", null, "Twelve questions to find where you are"), el("p", null, "No reading first. It opens easy and moves up as you get them right, keeping you near 80% correct. Every answer shows the phrase that decided it and the trap that was set."), el("p", null, "Say how sure you are each time. The confident misses are where the fastest gains are.")); }
+  else { const last = S.runs[S.runs.length - 1], due = dueList().length, w = weakestConcepts(1)[0];
+    d.append(el("div", "label", "Next move"), el("h2", null, due >= 6 ? `${due} questions are fading. Run Review first.` : w ? `Climb again. It'll lean on ${human(w[0])}.` : "Climb again."));
+    if (last) d.append(el("p", null, `Last run: ${last.right} of ${last.n} right, estimate ${Math.round(last.pred0 * 100)}% → ${Math.round(last.pred1 * 100)}%.`)); }
+  const row = el("div", "row"), b = el("button", "btn go", S.n ? "Start a climb" : "Start the placement climb"); b.onclick = () => startRun("climb"); row.append(b); d.append(row); C.append(d);
+}
+function renderDone(C) {
+  const d = el("div", "card-body summary"), right = run.res.reduce((a, b) => a + b, 0), n = run.res.length, p1 = predicted();
+  if (run.mode === "mock") {
+    const m = run.mock, lvl = m.raw >= PASS + 0.06 ? "ok" : m.raw >= PASS ? "warn" : "bad";
+    const vd = el("div", "verdict " + lvl), vt = el("div"); vt.append(el("h3", null, `${m.right} of ${m.n} right · ${pct(m.raw)}`), el("p", null, lvl === "ok" ? "That counts toward the ready check." : lvl === "warn" ? "Over the line, but without enough margin yet." : "Under the line. The topics below show where the points went."));
+    vd.append(el("span", "sh " + lvl), vt); d.append(vd);
+    if (!m.complete) d.append(el("p", "ann", "Ended early, so this one doesn't count toward the ready check."));
+    const tbl = el("div", "tbl"), t = el("table"), th = el("tr"); ["Topic", "Right"].forEach(x => th.append(el("th", null, x))); t.append(th);
+    for (const dd in DOMS) { const r = m.byDom[dd] || [0, 0], tr = el("tr"); tr.append(el("td", null, DOMS[dd].name), el("td", "num", `${r[0]}/${r[1]}`)); t.append(tr); }
+    tbl.append(t); d.append(tbl);
+    const misses = run.queue.slice(0, run.ids.length).filter(id => !run.answers[id]?.correct);
+    if (misses.length) { const det = el("details", "concepts"); det.append(el("summary", null, `Review the ${misses.length} you missed`)); const box = el("div"); box.style.cssText = "display:grid;gap:14px;margin-top:10px";
+      for (const id of misses) { const q = byId(id), it = el("div"); it.style.cssText = "border-top:1px solid var(--line);padding-top:10px"; it.append(el("p", "stem", q.stem), el("p", null, "Answer: " + q.answer.map(i => q.options[i]).join(" + ")), el("p", "sub", q.why || "")); box.append(it); }
+      det.append(box); d.append(det); }
+  } else {
+    d.append(el("div", "label", run.mode === "boss" ? "Boss run complete" : run.mode === "review" ? "Review complete" : "Climb complete"), el("h2", null, `${right} of ${n} right`));
+    const stats = el("div", "stats"), st = (v, l) => { const s = el("div", "stat"); s.append(el("div", "v", v), el("div", "l", l)); stats.append(s); };
+    const dp = Math.round((p1 - run.pred0) * 100), [sr, sn] = S.calib.sure;
+    st((dp >= 0 ? "+" : "") + dp + " pts", "estimate change"); st("+" + (S.xp - run.xp0), "xp"); st(sn ? pct(sr / sn) : "—", "right when “sure” (all-time)"); st(String(dueList().length), "due for review");
+    d.append(stats);
+    const w = weakestConcepts(2); if (w.length) d.append(el("p", "ann", "Leaning on next: " + w.map(x => `${human(x[0])} (${pct(x[1])})`).join(", ")));
+  }
+  const row = el("div", "row end"), close = el("button", "btn quiet", "Done"), again = el("button", "btn go", "Climb again");
+  close.onclick = () => { run = null; renderAll(); }; again.onclick = () => startRun("climb"); row.append(close, again); d.append(row); C.append(d);
+}
+
+/* ---------- progress report for the agent ---------- */
+function report() {
+  const misses = Object.entries(S.it).filter(([id, r]) => r.w > 0 && byId(id)).map(([id, r]) => ({ id, concepts: byId(id).concepts || [], wrong: r.w, right: r.r, confidentMisses: r.sw || 0, lastAnswer: r.ok ? "right" : "wrong", lastConfidence: r.conf })).sort((a, b) => (b.wrong - b.right) - (a.wrong - a.right));
+  const concepts = Object.keys(S.ct).map(c => ({ concept: c, estimate: Math.round((conceptAcc(c) || 0) * 100), answers: S.ct[c].n })).sort((a, b) => a.estimate - b.estimate);
+  const cal = {}; for (const k of ["guess", "think", "sure"]) cal[k] = { right: S.calib[k][0], total: S.calib[k][1] };
+  return { bank: TITLE, exported: new Date().toISOString(), answers: S.n, estimatePercent: Math.round(predicted() * 100), passMarkPercent: Math.round(PASS * 100), level: Number(S.theta.toFixed(2)),
+    suggestedDifficulty: clamp(Math.round(3 + S.theta + 0.5), 1, 5), topics: Object.keys(DOMS).map(d => ({ id: d, name: DOMS[d].name, estimate: Math.round(domainAcc(d) * 100) })),
+    conceptsWeakestFirst: concepts, misses, calibration: cal, questionsSeen: Object.keys(S.it).length, questionsInBank: BANK.length };
+}
+$("copyProg").onclick = () => copyText(JSON.stringify(report(), null, 2), "Progress report copied");
+$("saveProg").onclick = () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(report(), null, 2)], { type: "application/json" })); a.download = "progress.json"; document.body.append(a); a.click(); a.remove(); toast("Saved. Move it into this folder if your browser put it in Downloads."); };
+
+/* ---------- wiring ---------- */
+$("bankTitle").textContent = BANK.length ? TITLE : "No question bank loaded";
+$("bankN").textContent = BANK.length;
+$("passTick").style.left = (PASS * 100) + "%"; $("passLabel").textContent = Math.round(PASS * 100) + "% PASS";
+$("mockN").textContent = MOCK_N || "–"; if (MOCK_N) $("mockD").textContent = `${MOCK_MIN} min, no feedback until the end.`;
+document.title = BANK.length ? TITLE + " · Learn Loop" : "Learn Loop";
+for (const id of ["mClimb", "mReview", "mBoss", "mMock"]) $(id).disabled = !BANK.length;
+$("mClimb").onclick = () => startRun("climb");
+$("mReview").onclick = () => { if (!dueList().length && !Object.values(S.it).some(r => r.w > 0)) { toast("Nothing due yet. Climb first."); return; } startRun("review"); };
+$("mBoss").onclick = () => { if (S.n < 12) { toast("Do one climb first so the boss knows your level"); return; } startRun("boss"); };
+$("mMock").onclick = () => startRun("mock");
+$("resetBtn").onclick = () => { $("resetConfirm").hidden = false; };
+$("resetNo").onclick = () => { $("resetConfirm").hidden = true; };
+$("resetYes").onclick = () => { S = fresh(); run = null; persist(); $("resetConfirm").hidden = true; renderAll(); toast("Progress erased"); };
+document.addEventListener("keydown", e => {
+  if (!run || e.metaKey || e.ctrlKey || e.altKey) return;
+  const tag = (e.target.tagName || "").toLowerCase(); if (tag === "textarea" || tag === "input") return;
+  if (run.phase === "ask") {
+    if (!run.revealed && (e.key === " " || e.key === "Enter")) { e.preventDefault(); run.revealed = true; renderCard(); return; }
+    const n = parseInt(e.key, 10); if (n >= 1 && n <= run.order.length) { choose(run.order[n - 1]); return; }
+    const k = e.key.toLowerCase(); if (k === "q") submit("guess"); else if (k === "w") submit("think"); else if (k === "e") submit("sure");
+  } else if (run.phase === "fb" && e.key === "Enter" && tag !== "button") { e.preventDefault(); next(); }
+});
+let tt = null;
+function toast(t) { const x = $("toast"); x.textContent = t; x.hidden = false; clearTimeout(tt); tt = setTimeout(() => x.hidden = true, 2600); }
+renderAll();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+progress.json
+docs/*
+!docs/README.md
+.DS_Store
