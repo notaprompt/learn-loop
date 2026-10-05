@@ -9,7 +9,7 @@ Nothing is hosted. Your documents and your progress stay on your machine.
 ## Start
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/learn-loop
+git clone https://github.com/notaprompt/learn-loop
 cd learn-loop
 ```
 
