@@ -8,6 +8,14 @@ Nothing is hosted. Your documents and your progress stay on your machine.
 
 ## Start
 
+**Fastest: paste this into your coding agent** (Codex, Claude Code, or similar) and it does the rest on any operating system:
+
+```
+Clone https://github.com/notaprompt/learn-loop, open play.html for me, then follow the AGENTS.md in that folder to get me started.
+```
+
+Or do it by hand:
+
 ```bash
 git clone https://github.com/notaprompt/learn-loop
 cd learn-loop
