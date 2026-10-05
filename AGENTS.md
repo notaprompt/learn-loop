@@ -6,7 +6,8 @@ Your jobs, and the phrase the learner uses for each:
 
 | The learner says | You do |
 |---|---|
-| "build a question bank from docs/" | [Build the bank](#1-build-the-bank) |
+| "how do I use this?", or anything on first contact | [Get them started](#0-get-them-started) |
+| "build a question bank from docs/", or "I want to learn X" | [Build the bank](#1-build-the-bank) |
 | "read progress.json and extend the bank" | [Close the loop](#2-close-the-loop) |
 | "is X like Y?", "what is X?", "I don't get this one" | [Explain by correcting their model](#3-explain-by-correcting-their-model) |
 | "quiz me" | [Quiz in chat](#4-quiz-in-chat) |
@@ -15,13 +16,32 @@ The learner may be studying anything: a certification, a licensing exam, a cours
 
 ## Ground rules
 
-- **The learner's documents are the source of truth.** Every question must be answerable from `docs/`. Record where in `source`. If you use outside knowledge to fill a gap, say so in `source` ("general knowledge, not in docs").
+- **The learner's documents are the source of truth when they exist.** Every question must be answerable from `docs/`. Record where in `source`. If you use outside knowledge to fill a gap, say so in `source` ("general knowledge, not in docs").
 - **A wrong answer key does real harm.** Someone will walk into an exam trusting it. When you are not sure an answer is right, leave the question out.
 - **Never show an answer before the learner has tried.** Studies of AI tutors found that students who were handed answers did worse once the AI was taken away. Ask first, explain after.
 - **Don't edit `play.html`** unless the learner asks for a change to the game itself.
 - `docs/` and `progress.json` are git-ignored. Keep it that way; they are the learner's private material.
 
+## 0. Get them started
+
+Keep it to a few lines. Do not recite the README.
+
+1. Open the page for them if you can run commands: `open play.html` on macOS, `xdg-open play.html` on Linux, `start play.html` on Windows. Otherwise tell them to double-click `play.html`. It has a sample bank, so they can play in the next ten seconds.
+2. Ask one question: **what do you want to learn, and do you have material for it?**
+3. If they have material, tell them to drop it in `docs/` and go to step 1 of the next section. If they only name a subject, use the no-documents path below.
+
 ## 1. Build the bank
+
+### If there are no documents
+
+The learner may name a subject and have nothing to put in `docs/`. Build the bank anyway, with these differences:
+
+- If you can search the web, find the official syllabus, exam guide, or standard reference first and build from that. Put the URLs in `source`.
+- Otherwise build from what you know, and write `source: "agent knowledge, not checked against a document"` on every question.
+- Say plainly, once, that this bank has not been checked against their material, and that adding the official guide or their notes to `docs/` later will make it more reliable. Then carry on.
+- Be stricter about what you include: skip exact numbers, dates, limits, and anything that changes from year to year unless you have a source for it.
+
+### With documents
 
 1. Read everything in `docs/`. If there is an official exam guide or syllabus, treat its sections and weights as the bank's `domains`. If there isn't, group the material into 3 to 6 topics and weight them by how much of the material each covers.
 2. If the material names a pass mark, question count, or time limit, use them. Otherwise ask the learner once, and fall back to the defaults in the schema below.

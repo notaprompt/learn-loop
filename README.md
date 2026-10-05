@@ -23,6 +23,8 @@ cd learn-loop
 
    It writes `bank.js` and checks its own answer key. Reload `play.html`.
 
+   No documents? Say `I want to learn <subject>` and it builds from the official syllabus if it can find one, or from what it knows, and marks every question as unchecked.
+
 ## The loop
 
 ```
