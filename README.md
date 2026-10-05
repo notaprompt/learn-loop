@@ -13,6 +13,8 @@ git clone https://github.com/notaprompt/learn-loop
 cd learn-loop
 ```
 
+No git? [Download the zip](https://github.com/notaprompt/learn-loop/archive/refs/heads/main.zip), unzip it, and carry on from step 1. Works the same on Windows, macOS, and Linux.
+
 1. **Try it now.** Open `play.html` in a browser (double-click it). It ships with a 14-question sample bank about how learning works.
 2. **Add your material.** Drop PDFs, notes, slides, or an exam guide into `docs/`.
 3. **Build your bank.** Open the folder in your agent and say:
